@@ -15,7 +15,7 @@ INCLUDES = -Isrc$(S)inc
 OBJECTS = $(patsubst %,$(OBJDIR)$(S)%,$(SOURCES:.c=.o))
 
 CFLAGS := -Wall -pedantic -std=c99 -g -Os -gstabs -DSIMULATE
-LFLAGS = `sdl-config --libs` -lSDL
+LFLAGS = -lSDL2
 CC := gcc
 
 all: $(PROG)
