@@ -10,12 +10,17 @@ SRCDIR := src
 OBJDIR := obj
 BINDIR := bin
 
-SOURCES =	main.c
-INCLUDES = -Isrc$(S)inc
+SOURCES =	main.c \
+			beta.c \
+			betalib$(S)betalib.c \
+			betalib$(S)debug.c \
+			termlib$(S)term.c \
+			
+INCLUDES = -Isrc$(S)inc -I/usr/local/include -I/usr/include/lua5.1
 OBJECTS = $(patsubst %,$(OBJDIR)$(S)%,$(SOURCES:.c=.o))
 
-CFLAGS := -Wall -pedantic -std=c99 -g -Os -gstabs -DSIMULATE
-LFLAGS = -lSDL2
+CFLAGS := -Wall -pedantic -std=gnu99 -g -O0 -gstabs
+LFLAGS = `sdl-config --libs` -lSDL -L/usr/local/lib -llua5.1 -lSDL_image
 CC := gcc
 
 all: $(PROG)

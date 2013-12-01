@@ -1,61 +1,125 @@
+#include <stdbool.h>
 #include <stdio.h>
-#include "SDL2/SDL.h"
+#include <string.h>
+#include <stdlib.h>
 
+#include "SDL/SDL.h"
+//#include "SDL/SDL_thread.h"
+
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
+#include "beta.h"
+#include "term.h"
+
+#include "betalib/betalib.h"
+
+lua_State* lstate;
 SDL_Surface* screen;
 
-void cleanup() {
-	SDL_FreeSurface(screen);
+Terminal* terminal;
+
+void openlualibs(lua_State *l) {
+	static const luaL_reg lualibs[] =
+	{
+		{ "base",       luaopen_base },
+		{ "betalib",	luaopen_betalib },
+		{ NULL,         NULL }
+	};
+
+	const luaL_reg *lib;
+
+	for (lib = lualibs; lib->func != NULL; lib++) {
+		lib->func(l);
+		lua_settop(l, 0);
+	}
 }
 
-int main(int argc, char* argv[]) {
-	SDL_Window *window;                    // Declare a pointer
-
-	SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
-
-	// Create an application window with the following settings:
-	window = SDL_CreateWindow("An SDL2 window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
-
-	// Check that the window was successfully made
-	if (window == NULL) {
-		// In the event that the window could not be made...
-		printf("Could not create window: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	SDL_Renderer *ren = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
-	if (ren == NULL){
-		printf("SDL_CreateRenderer Error: %s\n",SDL_GetError());
-		return 1;
-	}
-
-	screen = SDL_CreateRGBSurface(0, 640, 480, 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-	if(screen == NULL) {
-		fprintf(stderr, "CreateRGBSurface failed: %s\n", SDL_GetError());
-		exit(1);
-	}
-
-	SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, screen);
-	SDL_FreeSurface(screen);
-	if (tex == NULL){
-		fprintf(stderr, "SDL_CreateTextureFromSurface failed: %s\n", SDL_GetError());
-		exit(1);
-		return 1;
-	}
-
-	SDL_RenderClear(ren);
-	SDL_RenderCopy(ren, tex, NULL, NULL);
-	SDL_RenderPresent(ren);
-
-	// The window is open: enter program loop (see SDL_PollEvent)
-	SDL_Delay(3000);  // Pause execution for 3000 milliseconds, for example
-
-	SDL_DestroyTexture(tex);
-	SDL_DestroyRenderer(ren);
-
-	// Close and destroy the window
-	SDL_DestroyWindow(window);
-
-	// Clean up
+void cleanup() {
+	lua_close(lstate);
 	SDL_Quit();
+}
+
+void SDL_init() {
+	setbuf(stdout, NULL);
+
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		printf("Could not initialize SDL: %s\n", SDL_GetError());
+		exit(1);
+	}
+	
+	screen = SDL_SetVideoMode(640, 480, 0, SDL_HWPALETTE);
+	
+	if (screen == NULL) {
+		printf("Couldn't set screen mode to 640 x 480: %s\n", SDL_GetError());
+		exit(1);
+	}
+	
+	SDL_WM_SetCaption("gamma", NULL);
+	
+	atexit(cleanup);
+}
+
+void script_run(lua_State *L, const char* fn) {
+	int s = luaL_loadfile(L, fn);
+
+	if (s==0) {
+		s = lua_pcall(L, 0, LUA_MULTRET, 0);
+		if(s) {
+		   	fprintf(stderr, "Lua error: %s\n", lua_tostring(L, -1));
+			exit(0);
+		}
+		printf("initialized\n");
+	} else {
+		fprintf(stderr, "Lua load error: %s\n", lua_tostring(L, -1));
+		exit(0);
+	}
+}
+
+int main() {
+	lstate = lua_open();
+
+	// create a terminal
+	terminal = term_init(0, 0, 640/11, 480/13/2, "res/font.png");
+
+	SDL_init();
+	SDL_EnableUNICODE(1);
+
+	// load the libraries
+	openlualibs(lstate);
+
+	// run the load script
+	script_run(lstate, "src/scripts/load.lua");
+
+	while(true) {
+		term_render(terminal, screen);
+		SDL_Flip(screen);
+
+		SDL_Event event;
+
+		while(SDL_PollEvent(&event)) {
+			switch (event.type) {
+				case SDL_QUIT:
+					exit(0);
+					break;
+				case SDL_KEYDOWN:
+					switch (event.key.keysym.sym) {
+						case SDLK_RIGHT:
+							break;
+						case SDLK_LEFT:
+							break;
+						default:
+							//beta->key = event.key.keysym.unicode;
+							//beta_interrupt(beta, VEC_KBD);
+							break;
+					}
+					break;
+			}
+		}
+
+		SDL_Delay(32);
+	}
+
 	return 0;
 }
