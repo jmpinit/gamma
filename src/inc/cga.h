@@ -43,6 +43,6 @@ CGA* cga_create(uint w, uint h, uint pixelsize);
 void cga_render(CGA* adapter, SDL_Surface* s, uint x, uint y);
 
 void cga_set(CGA* s, uint x, uint y, uint8_t v);
-void cga_get(CGA* s, uint x, uint y, uint8_t v);
+uint8_t cga_get(CGA* s, uint x, uint y);
 
 #endif

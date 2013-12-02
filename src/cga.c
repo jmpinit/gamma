@@ -37,11 +37,26 @@ void cga_render(CGA* adapter, SDL_Surface* canvas, uint left, uint top) {
 }
 
 void cga_set(CGA* s, uint x, uint y, uint8_t v) {
+	uint rawindex = (y*s->width+x);
+	uint index = rawindex/2;
 
+	if(rawindex%2 == 0) {
+		s->pixels[index] &= 0x0F;
+		s->pixels[index] |= (v&0xF) << 4;
+	} else {
+		s->pixels[index] &= 0xF0;
+		s->pixels[index] |= (v&0xF);
+	}
 }
 
-void cga_get(CGA* s, uint x, uint y, uint8_t v) {
+uint8_t cga_get(CGA* s, uint x, uint y) {
+	uint rawindex = (y*s->width+x);
+	uint index = rawindex/2;
 
+	if(rawindex%2 == 0)
+		return s->pixels[index] >> 4;
+	else
+		return s->pixels[index] & 0xF;
 }
 
 void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel) {

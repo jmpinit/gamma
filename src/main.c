@@ -104,11 +104,16 @@ int main(int argc, char* argv[]) {
 	lstate = lua_open();
 
 	// create a terminal
-	terminal = term_init(0, 0, 640/11, 480/13/2, "res/font.png");
+	//terminal = term_init(0, 0, 640/11, 480/13/2, "res/font.png");
 	adapter = cga_create(640/2, 480/2, 2);
 
-	for(int i=0; i < 320*240/2; i++)
-		adapter->pixels[i] = 0x12;
+	for(int i=0; i < 16; i++) {
+		for(int y=0; y < 16; y++) {
+			for(int x=0; x < 16; x++) {
+				cga_set(adapter, i*16 + x, y, i);
+			}
+		}
+	}
 
 	SDL_init();
 	SDL_EnableUNICODE(1);
