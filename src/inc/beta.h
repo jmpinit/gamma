@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "term.h"
 
 #define REG_XP		30
@@ -74,10 +75,12 @@ typedef struct Beta {
 	char key;
 } Beta;
 
+extern Beta* beta;
+
 // simulation
 Beta*		beta_create(int memsize);
-void		beta_tick(Beta*);
-void		beta_interrupt(Beta*, uint32_t address);
+void		beta_tick(Beta*, lua_State *L);
+void		beta_interrupt(Beta*, lua_State *L, uint32_t address);
 uint32_t	beta_read_reg(Beta*, uint8_t index);
 void		beta_write_reg(Beta*, uint32_t value, uint8_t index);
 uint32_t	beta_read_mem(Beta*, uint32_t addr);

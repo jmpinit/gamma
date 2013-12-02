@@ -34,6 +34,8 @@ void openlualibs(lua_State *l) {
 		lib->func(l);
 		lua_settop(l, 0);
 	}
+
+	luaL_openlibs(l);
 }
 
 void cleanup() {
@@ -90,9 +92,15 @@ int main() {
 	openlualibs(lstate);
 
 	// run the load script
-	script_run(lstate, "src/scripts/load.lua");
+	script_run(lstate, "src/scripts/code.lua");
+
+	beta = beta_create(4096);
+	beta_load(beta, "checker.bin");
 
 	while(true) {
+		beta_tick(beta, lstate);
+		if(beta->halted) exit(0);
+
 		term_render(terminal, screen);
 		SDL_Flip(screen);
 

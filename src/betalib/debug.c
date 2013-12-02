@@ -10,8 +10,6 @@
 
 #include "betalib/debug.h"
 
-Beta* currentBeta = NULL;
-
 #define ARGS "(memsize)"
 int betalib_new(lua_State *L) {
 	if(lua_type(L, 1) == LUA_TNUMBER) {
@@ -23,7 +21,7 @@ int betalib_new(lua_State *L) {
 		newbeta->tty = terminal;
 
 		// update state
-		currentBeta = newbeta;
+		beta = newbeta;
 	} else {
 		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
 	}
@@ -41,7 +39,7 @@ int betalib_write_reg(lua_State *L) {
 		int value = (int)lua_tonumber(L, 1);
 		int index = (int)lua_tonumber(L, 2);
 
-		beta_write_reg(currentBeta, value, index);
+		beta_write_reg(beta, value, index);
 	} else {
 		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
 	}
@@ -56,7 +54,7 @@ int betalib_read_reg(lua_State *L) {
 		// get args
 		int index = (int)lua_tonumber(L, 1);
 
-		lua_pushnumber(L, beta_read_reg(currentBeta, index));
+		lua_pushnumber(L, beta_read_reg(beta, index));
 	} else {
 		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
 	}
@@ -74,7 +72,7 @@ int betalib_write_mem(lua_State *L) {
 		int value = (int)lua_tonumber(L, 1);
 		int address = (int)lua_tonumber(L, 2);
 
-		beta_write_mem(currentBeta, value, address);
+		beta_write_mem(beta, value, address);
 	} else {
 		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
 	}
@@ -89,7 +87,7 @@ int betalib_read_mem(lua_State *L) {
 		// get args
 		int address = (int)lua_tonumber(L, 1);
 
-		lua_pushnumber(L, beta_read_mem(currentBeta, address));
+		lua_pushnumber(L, beta_read_mem(beta, address));
 	} else {
 		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
 	}
@@ -99,7 +97,7 @@ int betalib_read_mem(lua_State *L) {
 #undef ARGS
 
 int betalib_tick(lua_State *L) {
-	beta_tick(currentBeta);
+	beta_tick(beta, L);
 	return 0;
 }
 
@@ -109,7 +107,7 @@ int betalib_interrupt(lua_State *L) {
 		// get args
 		int address = (int)lua_tonumber(L, 1);
 
-		beta_interrupt(currentBeta, address);
+		beta_interrupt(beta, L, address);
 	} else {
 		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
 	}
@@ -124,7 +122,7 @@ int betalib_load(lua_State *L) {
 		// get args
 		const char* filename = lua_tostring(L, 1);
 
-		beta_load(currentBeta, filename);
+		beta_load(beta, filename);
 
 		return 1;
 	} else {
