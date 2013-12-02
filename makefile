@@ -12,10 +12,10 @@ BINDIR := bin
 
 SOURCES =	main.c \
 			beta.c \
+			term.c \
+			cga.c \
 			betalib$(S)betalib.c \
 			betalib$(S)debug.c \
-			termlib$(S)term.c \
-			cga.c \
 			
 INCLUDES = -Isrc$(S)inc -I/usr/local/include -I/usr/include/lua5.1
 OBJECTS = $(patsubst %,$(OBJDIR)$(S)%,$(SOURCES:.c=.o))

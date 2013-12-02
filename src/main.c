@@ -114,8 +114,8 @@ int main(int argc, char* argv[]) {
 	lstate = lua_open();
 
 	// create a terminal
-	//terminal = term_init(0, 0, 640/11, 480/13/2, "res/font.png");
-	adapter = cga_create(640/2, 480/2, 2);
+	terminal = term_create(640/11, 240/13, "res/font.png");
+	adapter = cga_create(320, 200, 2);
 
 	// draw test pattern FIXME
 	for(int i=0; i < 16; i++) {
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
 		memcpy(adapter->pixels, beta->graph_mem, sizeof(uint32_t)*adapter->width*adapter->height/8);
 		cga_render(adapter, screen, 0, 0);
 
-		//term_render(terminal, screen);
+		term_render(terminal, screen, 0, 400);
 		SDL_Flip(screen);
 
 		SDL_Event event;

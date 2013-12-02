@@ -1,6 +1,8 @@
 require("bit")
 Beta = require("./src/scripts/beta")
 
+betalib.load("os.bin")
+
 function tick(pc, opcode, regc, rega, regb, lit)
 	-- get rid of supervisor bit
 	pc = bit.band(pc, 0x7FFFFFFF)
@@ -10,10 +12,6 @@ function tick(pc, opcode, regc, rega, regb, lit)
 	if Beta.opcodes[opcode] then
 		name = Beta.opcodes[opcode][1]
 		const = Beta.opcodes[opcode][2]
-
-		if name == "ST" then
-			print(string.format("%x", betalib.read_reg(rega)))
-		end
 
 		if const then
 			print(pc, name, "R"..rega, lit, "R"..regc)

@@ -73,8 +73,6 @@ void beta_write_mem(Beta* beta, uint32_t value, uint32_t addr) {
 void beta_interrupt(Beta* beta, lua_State *L, uint32_t address) {
 	beta_write_reg(beta, beta->pc + 4, REG_XP);
 	beta->pc = address | (1 << 31);
-	printf("Interrupt(%d)\n", beta->pc & ~(1<<31));
-	//beta_tick(beta, L);
 }
 
 void beta_tick(Beta* beta, lua_State *L) {
@@ -222,7 +220,6 @@ void beta_tick(Beta* beta, lua_State *L) {
 					break;
 				case X_GR_MEM:
 					beta->registers[0] = (beta->graph_mem - beta->memory)*4;
-					printf("GR MEM called! %d\n", beta->registers[0]);
 					break;
 			}
 
