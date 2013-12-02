@@ -3,7 +3,7 @@
 
 #include "term.h"
 
-Terminal* term_create(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const char* fn) {
+Terminal* term_create(unsigned int w, unsigned int h, const char* fn) {
 	SDL_Surface* temp = IMG_Load(fn);
 	if (temp == NULL) {
 		printf("Unable to load image: %s\n", fn);
@@ -13,8 +13,6 @@ Terminal* term_create(unsigned int x, unsigned int y, unsigned int w, unsigned i
 	Terminal* newterm = calloc(1, sizeof(Terminal));
 	char* textbuff = calloc(w*h, sizeof(char));
 
-	newterm->left = x;
-	newterm->top = y;
 	newterm->font = temp;
 	newterm->width = w;
 	newterm->height = h;
@@ -72,7 +70,7 @@ void term_puts(Terminal* t, const char* str) {
 	char c; while((c = *(str++))) term_putc(t, c);
 }
 
-void term_render(Terminal* t, struct SDL_Surface* canvas) {
+void term_render(Terminal* t, struct SDL_Surface* canvas, uint left, uint top) {
 	SDL_Rect src, dest;
 
 	src.w = 11;
@@ -88,8 +86,8 @@ void term_render(Terminal* t, struct SDL_Surface* canvas) {
 				src.x = (index%10)*src.w;
 				src.y = (index/10)*src.h;
 
-				dest.x = t->left + x*dest.w;
-				dest.y = t->top + y*dest.h;
+				dest.x = left + x*dest.w;
+				dest.y = top + y*dest.h;
 
 				SDL_BlitSurface(t->font, &src, canvas, &dest);
 			}
