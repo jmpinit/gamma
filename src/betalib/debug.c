@@ -18,7 +18,6 @@ int betalib_new(lua_State *L) {
 
 		// construct the beta
 		Beta* newbeta = beta_create(memsize);
-		newbeta->tty = terminal;
 
 		// update state
 		beta = newbeta;

@@ -1,0 +1,47 @@
+.include /home/owen/bin/jsim/beta.uasm
+
+.macro GR_MEM() PRIV_OP (9)
+
+||| Interrupt vectors:
+
+. = VEC_RESET
+	BR(I_Reset)	| on Reset (start-up)
+. = VEC_II
+	BR(I_IllOp)	| on Illegal Instruction (eg SVC)
+. = VEC_CLK
+	BR(I_Clk)	| On clock interrupt
+. = VEC_KBD
+	BR(I_Kbd)	| on Keyboard interrupt
+. = VEC_MOUSE
+	BR(I_Mouse)	| on mouse interrupt
+
+I_Reset:
+	BR(Start)
+
+I_IllOp:
+	JMP(XP)
+
+I_Clk:
+	JMP(XP)
+
+I_Kbd:
+	JMP(XP)
+
+I_Mouse:
+	JMP(XP)
+
+| -- USER PROGRAM --
+
+gr_mem = R1
+
+Start:
+	GR_MEM()
+	MOVE(R0, R1)
+	CMOVE(0x8765, R2)
+	SHLC(R2, 16, R2)
+	ORC(R2, 0x4321, R2)
+Loop:
+	ADD(R3, gr_mem, R4)
+	ST(R2, 0, R4)
+	ADDC(R3, 64, R3)
+	BR(Loop)

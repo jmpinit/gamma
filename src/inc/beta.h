@@ -16,15 +16,23 @@
 #define	VEC_KBD		12	// keyboard interrupt
 #define VEC_MOUSE	16	// mouse interrupt
 
-#define X_HALT 		0
-#define X_RDCHAR	1
-#define X_WRCHAR	2
-#define X_CYCLE		3
-#define X_TIME		4
-#define X_CLICK		5
-#define X_RANDOM	6
-#define X_SEED		7
-#define X_SERVER	8
+// special instructions
+enum {
+	// default
+	X_HALT,
+	X_RDCHAR,
+	X_WRCHAR,
+	X_CYCLE,
+	X_TIME,
+	X_CLICK,
+	X_RANDOM,
+	X_SEED,
+	X_SERVER,
+
+	// graphics instructions
+	X_GR_MEM,		// r0 = base of graphics memory
+	X_GR_REFRESH	// push changes to screen
+} Special_Instruction;
 
 // hardware devices
 extern Terminal* terminal;
@@ -75,6 +83,8 @@ typedef struct Beta {
 	uint32_t registers[31];
 
 	Terminal* tty;
+	CGA* screen;
+	uint32_t* graph_mem;
 	char key;
 } Beta;
 

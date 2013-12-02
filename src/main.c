@@ -107,6 +107,7 @@ int main(int argc, char* argv[]) {
 	//terminal = term_init(0, 0, 640/11, 480/13/2, "res/font.png");
 	adapter = cga_create(640/2, 480/2, 2);
 
+	// draw test pattern FIXME
 	for(int i=0; i < 16; i++) {
 		for(int y=0; y < 16; y++) {
 			for(int x=0; x < 16; x++) {
@@ -121,18 +122,21 @@ int main(int argc, char* argv[]) {
 	// load the libraries
 	openlualibs(lstate);
 
+	beta = beta_create(4*1024);
+	beta_load(beta, "src/asm/graphics.bin");
+
 	// run the load script
 	script_run(lstate, argv[1]);
-
-	beta = beta_create(4096);
-	beta_load(beta, "checker.bin");
 
 	while(true) {
 		beta_tick(beta, lstate);
 		if(beta->halted) exit(0);
 
-		//term_render(terminal, screen);
+		// graphics
+		memcpy(adapter->pixels, beta->graph_mem, sizeof(uint32_t)*adapter->width*adapter->height/8);
 		cga_render(adapter, screen, 0, 0);
+
+		//term_render(terminal, screen);
 		SDL_Flip(screen);
 
 		SDL_Event event;

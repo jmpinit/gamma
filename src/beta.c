@@ -10,6 +10,21 @@
 
 Beta* beta;
 
+Beta* beta_create(int progsize) {
+	Beta* newbeta = calloc(1, sizeof(Beta));
+
+	newbeta->tty = terminal;
+	newbeta->screen = adapter;
+
+	newbeta->memsize = progsize + 							// main memory
+		adapter->width*adapter->height/sizeof(uint32_t);	// mapped graphics data
+	newbeta->memory = calloc(newbeta->memsize, sizeof(uint32_t));
+
+	newbeta->graph_mem = newbeta->memory + progsize;
+
+	return newbeta;
+}
+
 void beta_load(Beta* beta, const char* filename) {
 	FILE *fp = fopen(filename, "rb");
 	int size_loaded = fread(beta->memory, sizeof(uint32_t), beta->memsize, fp);
@@ -20,16 +35,6 @@ void beta_load(Beta* beta, const char* filename) {
 	} else {
 		printf("loaded %d u32s into beta.\n", size_loaded);
 	}
-}
-
-Beta* beta_create(int memsize) {
-	Beta* newbeta = calloc(1, sizeof(Beta));
-	uint32_t* memory = calloc(memsize, sizeof(uint32_t));
-
-	newbeta->memsize = memsize;
-	newbeta->memory = memory;
-
-	return newbeta;
 }
 
 uint32_t beta_read_reg(Beta* beta, uint8_t index) {
@@ -145,7 +150,7 @@ void beta_tick(Beta* beta, lua_State *L) {
 			break;
 		case LD:
 			beta->pc += 4;
-			ea = val_a + (int32_t)literal;
+			ea = (val_a&~(1<<31)) + (int32_t)literal;
 			beta_write_reg(beta, beta_read_mem(beta, ea), reg_c);
 			break;
 		case LDR:
@@ -182,7 +187,7 @@ void beta_tick(Beta* beta, lua_State *L) {
 		case SUB:	beta_write_reg(beta, val_a - val_b, reg_c);			beta->pc += 4; break;
 		case SUBC:	beta_write_reg(beta, val_a - literal, reg_c);		beta->pc += 4; break;
 		case ST:
-			ea = val_a + (int32_t)literal;
+			ea = (val_a&~(1<<31)) + (int32_t)literal;
 			beta_write_mem(beta, val_c, ea);
 			beta->pc += 4;
 			break;
@@ -214,6 +219,10 @@ void beta_tick(Beta* beta, lua_State *L) {
 				case X_SEED:
 					break;
 				case X_SERVER:
+					break;
+				case X_GR_MEM:
+					beta->registers[0] = (beta->graph_mem - beta->memory)*4;
+					printf("GR MEM called! %d\n", beta->registers[0]);
 					break;
 			}
 

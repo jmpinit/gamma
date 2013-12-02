@@ -6,14 +6,19 @@ void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel);
 
 CGA* cga_create(uint w, uint h, uint pixelsize) {
 	CGA* newcga = calloc(1, sizeof(CGA));
-	uint8_t* pixels = calloc(w*h/2, sizeof(uint8_t));
 
 	newcga->width = w;
 	newcga->height = h;
 	newcga->pixelsize = pixelsize;
+
+	uint8_t* pixels = calloc(cga_byte_size(newcga), sizeof(uint8_t));
 	newcga->pixels = pixels;
 
 	return newcga;
+}
+
+uint cga_byte_size(CGA* s) {
+	return s->width*s->height/2;
 }
 
 void cga_render(CGA* adapter, SDL_Surface* canvas, uint left, uint top) {
@@ -30,7 +35,7 @@ void cga_render(CGA* adapter, SDL_Surface* canvas, uint left, uint top) {
 				index >>= 4;
 
 			if(adapter->pixelsize > 1) {
-				SDL_Rect rect = {x, y, adapter->pixelsize, adapter.pixelsize};
+				SDL_Rect rect = {x*2, y*2, adapter->pixelsize, adapter->pixelsize};
 				SDL_FillRect(canvas, &rect, cga_colors[index]);
 			} else {
 				set_pixel(canvas, left + x*adapter->pixelsize, top + y*adapter->pixelsize, cga_colors[index]);

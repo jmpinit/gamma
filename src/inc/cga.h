@@ -39,6 +39,8 @@ typedef struct CGA {
 	uint8_t* pixels;
 } CGA;
 
+uint cga_byte_size(CGA*);
+
 CGA* cga_create(uint w, uint h, uint pixelsize);
 void cga_render(CGA* adapter, SDL_Surface* s, uint x, uint y);
 
