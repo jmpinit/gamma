@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "SDL/SDL.h"
-//#include "SDL/SDL_thread.h"
+#include "SDL/SDL_thread.h"
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -23,6 +23,8 @@ SDL_Surface* screen;
 
 Terminal* terminal;
 CGA* adapter;
+
+bool running = true;
 
 void openlualibs(lua_State *l) {
 	static const luaL_reg lualibs[] =
@@ -83,6 +85,14 @@ void script_run(lua_State *L, const char* fn) {
 	}
 }
 
+int BetaThread(void *ptr) {
+	while(running) {
+		beta_tick(beta, lstate);
+	}
+
+	return 0;
+}
+
 int main(int argc, char* argv[]) {
 	// chcek for correct # of arguments
 	if(argc != 2) {
@@ -128,8 +138,15 @@ int main(int argc, char* argv[]) {
 	// run the load script
 	script_run(lstate, argv[1]);
 
+	SDL_Thread *thread;
+	thread = SDL_CreateThread(BetaThread, "BetaThread");
+
+	if(NULL == thread) {
+		printf("SDL_CreateThread failed: %s\n", SDL_GetError());
+		exit(1);
+	}
+
 	while(true) {
-		beta_tick(beta, lstate);
 		if(beta->halted) exit(0);
 
 		// graphics
@@ -144,6 +161,11 @@ int main(int argc, char* argv[]) {
 		while(SDL_PollEvent(&event)) {
 			switch (event.type) {
 				case SDL_QUIT:
+					running = false;
+
+					int threadReturnValue;
+					SDL_WaitThread(thread, &threadReturnValue);
+
 					exit(0);
 					break;
 				case SDL_KEYDOWN:
