@@ -10,8 +10,11 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+typedef unsigned int uint;
+
 #include "beta.h"
 #include "term.h"
+#include "cga.h"
 
 #include "betalib/betalib.h"
 
@@ -19,6 +22,7 @@ lua_State* lstate;
 SDL_Surface* screen;
 
 Terminal* terminal;
+CGA* adapter;
 
 void openlualibs(lua_State *l) {
 	static const luaL_reg lualibs[] =
@@ -101,6 +105,10 @@ int main(int argc, char* argv[]) {
 
 	// create a terminal
 	terminal = term_init(0, 0, 640/11, 480/13/2, "res/font.png");
+	adapter = cga_create(640/2, 480/2, 2);
+
+	for(int i=0; i < 320*240/2; i++)
+		adapter->pixels[i] = 0x12;
 
 	SDL_init();
 	SDL_EnableUNICODE(1);
@@ -118,7 +126,8 @@ int main(int argc, char* argv[]) {
 		beta_tick(beta, lstate);
 		if(beta->halted) exit(0);
 
-		term_render(terminal, screen);
+		//term_render(terminal, screen);
+		cga_render(adapter, screen, 0, 0);
 		SDL_Flip(screen);
 
 		SDL_Event event;

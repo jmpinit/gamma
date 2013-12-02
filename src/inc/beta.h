@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "term.h"
+#include "cga.h"
 
 #define REG_XP		30
 #define REG_ZERO	31
@@ -25,7 +26,9 @@
 #define X_SEED		7
 #define X_SERVER	8
 
+// hardware devices
 extern Terminal* terminal;
+extern CGA* adapter;
 
 typedef enum {
 	ADD		= 0x20,
