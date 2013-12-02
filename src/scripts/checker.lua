@@ -1,6 +1,9 @@
 require("bit")
 Beta = require("./src/scripts/beta")
 
+betalib.new(4096)
+betalib.load("checker.bin")
+
 function tick(pc, opcode, regc, rega, regb, lit)
 	-- get rid of supervisor bit
 	pc = bit.band(pc, 0x7FFFFFFF)
