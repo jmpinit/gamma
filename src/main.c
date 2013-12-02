@@ -79,7 +79,24 @@ void script_run(lua_State *L, const char* fn) {
 	}
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+	// chcek for correct # of arguments
+	if(argc != 2) {
+		printf("error: not enough arguments\n");
+		printf("usage: gamma /path/to/script.lua\n");
+		exit(1);
+	}
+
+	// check that script file exists
+	FILE* file = fopen(argv[1], "r");
+	if(file == NULL) {
+		printf("error: script does not exist\n");
+		printf("usage: gamma /path/to/script.lua\n");
+		exit(1);
+	} else {
+		fclose(file);
+	}
+
 	lstate = lua_open();
 
 	// create a terminal
@@ -92,7 +109,7 @@ int main() {
 	openlualibs(lstate);
 
 	// run the load script
-	script_run(lstate, "src/scripts/code.lua");
+	script_run(lstate, argv[1]);
 
 	beta = beta_create(4096);
 	beta_load(beta, "checker.bin");
