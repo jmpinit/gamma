@@ -3,7 +3,7 @@
 
 #include "term.h"
 
-Terminal* term_init(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const char* fn) {
+Terminal* term_create(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const char* fn) {
 	SDL_Surface* temp = IMG_Load(fn);
 	if (temp == NULL) {
 		printf("Unable to load image: %s\n", fn);

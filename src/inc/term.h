@@ -11,7 +11,7 @@ typedef struct Terminal {
 	SDL_Surface* font;
 } Terminal;
 
-Terminal* term_init(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const char* fn);
+Terminal* term_create(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const char* fn);
 
 void term_clear(Terminal* t);
 void term_move(Terminal* t, unsigned int x, unsigned int y);
