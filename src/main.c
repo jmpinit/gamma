@@ -25,6 +25,7 @@ Terminal* terminal;
 CGA* adapter;
 
 bool running = true;
+bool busy = false;
 
 void openlualibs(lua_State *l) {
 	static const luaL_reg lualibs[] =
@@ -86,8 +87,12 @@ void script_run(lua_State *L, const char* fn) {
 }
 
 int BetaThread(void *ptr) {
-	while(running) {
+	while(running && !beta->halted) {
 		beta_tick(beta, lstate);
+		if(interrupt) {
+			beta_interrupt(beta, lstate, interrupt);
+			interrupt = 0;
+		}
 	}
 
 	return 0;
@@ -147,7 +152,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	while(true) {
-		if(beta->halted) exit(0);
+		//if(beta->halted) exit(0);
 
 		// graphics
 		memcpy(adapter->pixels, beta->graph_mem, sizeof(uint32_t)*adapter->width*adapter->height/8);
@@ -175,8 +180,8 @@ int main(int argc, char* argv[]) {
 						case SDLK_LEFT:
 							break;
 						default:
-							//beta->key = event.key.keysym.unicode;
-							//beta_interrupt(beta, VEC_KBD);
+							beta->key = event.key.keysym.unicode;
+							beta_interrupt(beta, lstate, VEC_KBD);
 							break;
 					}
 					break;
