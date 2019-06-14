@@ -12,7 +12,7 @@ SOURCES =	main.c \
 			debug.c
 
 LUA_CFLAGS=`pkg-config lua5.1 --cflags`
-LDFLAGS=`pkg-config lua5.1 --libs` `sdl-config --libs` -lSDL_image
+LDFLAGS=`pkg-config lua5.1 --libs` `sdl2-config --libs` -lSDL2_image
 
 CC=clang
 CCOPT= -fomit-frame-pointer

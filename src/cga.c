@@ -1,4 +1,4 @@
-#include "SDL/SDL.h"
+#include "SDL2/SDL.h"
 
 #include "cga.h"
 
@@ -35,7 +35,7 @@ void cga_render(CGA* adapter, SDL_Surface* canvas, uint left, uint top) {
 				index >>= 4;
 
 			if(adapter->pixelsize > 1) {
-				SDL_Rect rect = {x*2, y*2, adapter->pixelsize, adapter->pixelsize};
+				SDL_Rect rect = {x * adapter->pixelsize, y * adapter->pixelsize, adapter->pixelsize, adapter->pixelsize};
 				SDL_FillRect(canvas, &rect, cga_colors[index]);
 			} else {
 				set_pixel(canvas, left + x*adapter->pixelsize, top + y*adapter->pixelsize, cga_colors[index]);

@@ -1,7 +1,7 @@
 #ifndef TERM_H
 #define TERM_H
 
-#include "SDL/SDL.h"
+#include "SDL2/SDL.h"
 
 typedef struct Terminal {
 	unsigned int width, height;

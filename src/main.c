@@ -3,8 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_thread.h"
+#include "SDL2/SDL.h"
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -18,8 +17,13 @@ typedef unsigned int uint;
 
 #include "betalib/betalib.h"
 
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
+
 lua_State* lstate;
-SDL_Surface* screen;
+
+SDL_Window* window = NULL;
+SDL_Surface* screen = NULL;
 
 Terminal* terminal;
 CGA* adapter;
@@ -54,19 +58,26 @@ void cleanup() {
 void SDL_init() {
 	setbuf(stdout, NULL);
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("Could not initialize SDL: %s\n", SDL_GetError());
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    fprintf(stderr, "could not initialize SDL2: %s\n", SDL_GetError());
 		exit(1);
-	}
-	
-	screen = SDL_SetVideoMode(640, 480, 0, SDL_HWPALETTE);
-	
-	if (screen == NULL) {
-		printf("Couldn't set screen mode to 640 x 480: %s\n", SDL_GetError());
+  }
+
+  window = SDL_CreateWindow(
+		"Gamma",
+		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+		SCREEN_WIDTH, SCREEN_HEIGHT,
+		SDL_WINDOW_SHOWN
+	);
+
+  if (window == NULL) {
+    fprintf(stderr, "could not create window: %s\n", SDL_GetError());
 		exit(1);
-	}
-	
-	SDL_WM_SetCaption("gamma", NULL);
+  }
+
+  screen = SDL_GetWindowSurface(window);
+  SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF));
+  SDL_UpdateWindowSurface(window);
 	
 	atexit(cleanup);
 }
@@ -120,7 +131,7 @@ int main(int argc, char* argv[]) {
 	lstate = luaL_newstate();
 
 	// create a terminal
-	terminal = term_create(640/11, 240/13, "res/font.png");
+	terminal = term_create(SCREEN_WIDTH/11, SCREEN_HEIGHT/13, "res/font.png");
 	adapter = cga_create(320, 200, 2);
 
 	// draw test pattern FIXME
@@ -133,7 +144,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	SDL_init();
-	SDL_EnableUNICODE(1);
+	//SDL_EnableUNICODE(1);
 
 	// load the libraries
 	openlualibs(lstate);
@@ -147,23 +158,23 @@ int main(int argc, char* argv[]) {
 	// run the load script
 	script_run(lstate, argv[1]);
 
-	SDL_Thread *thread;
+	/*SDL_Thread *thread;
 	thread = SDL_CreateThread(BetaThread, "BetaThread");
 
 	if(NULL == thread) {
 		printf("SDL_CreateThread failed: %s\n", SDL_GetError());
 		exit(1);
-	}
+	}*/
 
 	while(true) {
 		//if(beta->halted) exit(0);
 
 		// graphics
-		memcpy(adapter->pixels, beta->graph_mem, sizeof(uint32_t)*adapter->width*adapter->height/8);
+		//memcpy(adapter->pixels, beta->graph_mem, sizeof(uint32_t)*adapter->width*adapter->height/8);
 		cga_render(adapter, screen, 0, 0);
 
-		term_render(terminal, screen, 0, 400);
-		SDL_Flip(screen);
+		//term_render(terminal, screen, 0, 400);
+		SDL_UpdateWindowSurface(window);
 
 		SDL_Event event;
 
@@ -172,8 +183,8 @@ int main(int argc, char* argv[]) {
 				case SDL_QUIT:
 					running = false;
 
-					int threadReturnValue;
-					SDL_WaitThread(thread, &threadReturnValue);
+					//int threadReturnValue;
+					//SDL_WaitThread(thread, &threadReturnValue);
 
 					exit(0);
 					break;
@@ -184,8 +195,8 @@ int main(int argc, char* argv[]) {
 						case SDLK_LEFT:
 							break;
 						default:
-							beta->key = event.key.keysym.unicode;
-							beta_interrupt(beta, lstate, VEC_KBD);
+							//beta->key = event.key.keysym.unicode;
+							//beta_interrupt(beta, lstate, VEC_KBD);
 							break;
 					}
 					break;

@@ -1,7 +1,7 @@
 #ifndef CGA_H
 #define CGA_H
 
-#include "SDL/SDL.h"
+#include "SDL2/SDL.h"
 
 typedef enum {
 	BLACK 			= 0,
