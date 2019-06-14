@@ -20,25 +20,27 @@ SOURCES =	main.c \
 INCLUDES = -Isrc$(S)inc -I/usr/local/include -I/usr/include/lua5.1
 OBJECTS = $(patsubst %,$(OBJDIR)$(S)%,$(SOURCES:.c=.o))
 
-CFLAGS := -Wall -pedantic -std=gnu99 -g -O0 -gstabs
+CFLAGS := -Wall -pedantic -std=gnu99 -g -O0
 LFLAGS = `sdl-config --libs` -lSDL -L/usr/local/lib -llua5.1 -lSDL_image
 CC := gcc
 
 all: $(PROG)
 
 run: $(PROG)
-	bin$(S)$(PROG)
+	$(BINDIR)$(S)$(PROG)
 	
 debug: $(PROG)
-	gdb bin$(S)$(PROG)
+	gdb $(BINDIR)$(S)$(PROG)
 
 # linking the program.
 $(PROG): $(OBJECTS)
+	@mkdir -p $(BINDIR)
 	$(CC) $(OBJECTS) -o $(BINDIR)$(S)$(PROG) $(LFLAGS)
 
 # compiling source files.
 $(OBJDIR)$(S)%.o: $(SRCDIR)$(S)%.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c -s -o $@ $<
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 clean:
 ifeq ($(OS),Windows_NT)
