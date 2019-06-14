@@ -26,16 +26,17 @@ CGA* adapter;
 
 bool running = true;
 bool busy = false;
+bool interrupt = false;
 
 void openlualibs(lua_State *l) {
-	static const luaL_reg lualibs[] =
+	static const luaL_Reg lualibs[] =
 	{
 		{ "base",       luaopen_base },
 		{ "betalib",	luaopen_betalib },
 		{ NULL,         NULL }
 	};
 
-	const luaL_reg *lib;
+	const luaL_Reg *lib;
 
 	for (lib = lualibs; lib->func != NULL; lib++) {
 		lib->func(l);
@@ -91,7 +92,7 @@ int BetaThread(void *ptr) {
 		beta_tick(beta, lstate);
 		if(interrupt) {
 			beta_interrupt(beta, lstate, interrupt);
-			interrupt = 0;
+			interrupt = false;
 		}
 	}
 
@@ -116,7 +117,7 @@ int main(int argc, char* argv[]) {
 		fclose(file);
 	}
 
-	lstate = lua_open();
+	lstate = luaL_newstate();
 
 	// create a terminal
 	terminal = term_create(640/11, 240/13, "res/font.png");
@@ -138,7 +139,10 @@ int main(int argc, char* argv[]) {
 	openlualibs(lstate);
 
 	beta = beta_create(4*1024);
-	beta_load(beta, "src/asm/graphics.bin");
+
+	// for testing manually set a simple program
+	beta->memory[0] = 0;
+	//beta_load(beta, "src/asm/graphics.bin");
 
 	// run the load script
 	script_run(lstate, argv[1]);

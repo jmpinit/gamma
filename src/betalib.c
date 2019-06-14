@@ -1,9 +1,10 @@
+#define LUA_LIB
+
 #include <stdio.h>
 #include <stdbool.h>
 
 #include <lua.h>
 #include <lauxlib.h>
-#include <lualib.h>
 
 #include "betalib/betalib.h"
 
@@ -11,7 +12,7 @@
 
 // LIBRARY INITIALIZATION
 
-static const luaL_reg betalib[] = {
+static const luaL_Reg betalib[] = {
 	// initilializers
 	{ "new",		betalib_new },
 
@@ -27,7 +28,8 @@ static const luaL_reg betalib[] = {
 	{ NULL,							NULL }
 };
 
-int luaopen_betalib(lua_State *L) {
-	luaL_openlib(L, "betalib", betalib, 0);
+LUALIB_API int luaopen_betalib(lua_State *L) {
+	luaL_register(L, "betalib", betalib);
 	return 1;
 }
+

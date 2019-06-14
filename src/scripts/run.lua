@@ -1,7 +1,7 @@
 require("bit")
 Beta = require("./src/scripts/beta")
 
-betalib.load("src/asm/graphics.bin")
+--betalib.load("src/asm/graphics.bin")
 
 function tick(pc, opcode, regc, rega, regb, lit)
 	-- get rid of supervisor bit
