@@ -26,7 +26,7 @@ CFLAGS= -g $(CCOPT) $(CCWARN) $(INCLUDES) $(LUA_CFLAGS)
 all: $(PROG)
 
 run: $(PROG)
-	$(BINDIR)/$(PROG)
+	$(BINDIR)/$(PROG) src/scripts/run.lua
 	
 debug: $(PROG)
 	gdb $(BINDIR)/$(PROG) src/scripts/run.lua
