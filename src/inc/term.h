@@ -3,6 +3,9 @@
 
 #include "SDL2/SDL.h"
 
+static const int CHARACTER_WIDTH = 11;
+static const int CHARACTER_HEIGHT = 13;
+
 typedef struct Terminal {
 	unsigned int width, height;
 	unsigned int x, y;

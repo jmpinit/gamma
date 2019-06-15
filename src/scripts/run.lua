@@ -1,13 +1,14 @@
 require("bit")
 Beta = require("./src/scripts/beta")
 
---betalib.load("src/asm/graphics.bin")
+betalib.load("src/asm/graphics.bin")
 
+-- Called by beta.c after every tick of the emulation
 function tick(pc, opcode, regc, rega, regb, lit)
-	-- get rid of supervisor bit
+	-- Get rid of supervisor bit
 	pc = bit.band(pc, 0x7FFFFFFF)
 
-	-- pretty print executed instruction
+	-- Pretty print executed instruction
 	xp = betalib.read_reg(30)
 	if Beta.opcodes[opcode] then
 		name = Beta.opcodes[opcode][1]

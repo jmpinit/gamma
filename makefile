@@ -27,7 +27,10 @@ all: $(PROG)
 
 run: $(PROG)
 	$(BINDIR)/$(PROG) src/scripts/run.lua
-	
+
+test: $(PROG)
+	$(BINDIR)/$(PROG) src/scripts/checker.lua
+
 debug: $(PROG)
 	gdb $(BINDIR)/$(PROG) src/scripts/run.lua
 

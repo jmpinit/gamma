@@ -19,6 +19,8 @@ typedef unsigned int uint;
 
 #include "betalib/betalib.h"
 
+const int MEMORY_SIZE = 4 * 1024;
+
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
@@ -35,11 +37,10 @@ bool busy = false;
 bool interrupt = false;
 
 void openlualibs(lua_State *l) {
-	static const luaL_Reg lualibs[] =
-	{
-		{ "base",       luaopen_base },
-		{ "betalib",	luaopen_betalib },
-		{ NULL,         NULL }
+	static const luaL_Reg lualibs[] = {
+		{ "base", luaopen_base },
+		{ "betalib", luaopen_betalib },
+		{ NULL, NULL },
 	};
 
 	const luaL_Reg *lib;
@@ -57,7 +58,7 @@ void cleanup() {
 	SDL_Quit();
 }
 
-void SDL_init() {
+void sdl_init() {
 	setbuf(stdout, NULL);
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -87,12 +88,14 @@ void SDL_init() {
 void script_run(lua_State *L, const char* fn) {
 	int s = luaL_loadfile(L, fn);
 
-	if (s==0) {
+	if (s == 0) {
 		s = lua_pcall(L, 0, LUA_MULTRET, 0);
-		if(s) {
-		   	fprintf(stderr, "Lua error: %s\n", lua_tostring(L, -1));
+
+		if (s) {
+			fprintf(stderr, "Lua error: %s\n", lua_tostring(L, -1));
 			exit(0);
 		}
+
 		printf("initialized\n");
 	} else {
 		fprintf(stderr, "Lua load error: %s\n", lua_tostring(L, -1));
@@ -101,9 +104,10 @@ void script_run(lua_State *L, const char* fn) {
 }
 
 void *beta_run(void *ptr) {
-	while(running && !beta->halted) {
+	while (running && !beta->halted) {
 		beta_tick(beta, lstate);
-		if(interrupt) {
+
+		if (interrupt) {
 			beta_interrupt(beta, lstate, interrupt);
 			interrupt = false;
 		}
@@ -115,16 +119,16 @@ void *beta_run(void *ptr) {
 }
 
 int main(int argc, char* argv[]) {
-	// chcek for correct # of arguments
-	if(argc != 2) {
+	// Check for correct # of arguments
+	if (argc != 2) {
 		printf("error: not enough arguments\n");
 		printf("usage: gamma /path/to/script.lua\n");
 		exit(1);
 	}
 
-	// check that script file exists
+	// Check that script file exists
 	FILE* file = fopen(argv[1], "r");
-	if(file == NULL) {
+	if (file == NULL) {
 		printf("error: script does not exist\n");
 		printf("usage: gamma /path/to/script.lua\n");
 		exit(1);
@@ -135,53 +139,47 @@ int main(int argc, char* argv[]) {
 	lstate = luaL_newstate();
 
 	// create a terminal
-	terminal = term_create(SCREEN_WIDTH/11, SCREEN_HEIGHT/13, "res/font.png");
+	terminal = term_create(SCREEN_WIDTH / CHARACTER_WIDTH, SCREEN_HEIGHT / CHARACTER_HEIGHT, "res/font.png");
+	term_puts(terminal, "Hello world");
 	adapter = cga_create(320, 200, 2);
 
-	// draw test pattern FIXME
-	for(int i=0; i < 16; i++) {
-		for(int y=0; y < 16; y++) {
-			for(int x=0; x < 16; x++) {
-				cga_set(adapter, i*16 + x, y, i);
+	// Draw test pattern to make it easier to recognize if the CGA adapter
+	// is not working
+	for (int i = 0; i < 16; i++) {
+		for (int y = 0; y < 16; y++) {
+			for (int x = 0; x < 16; x++) {
+				cga_set(adapter, i * 16 + x, y, i);
 			}
 		}
 	}
 
-	SDL_init();
+	sdl_init();
 
-	// load the libraries
+	beta = beta_create(MEMORY_SIZE);
+
+	// Run the load script
 	openlualibs(lstate);
-
-	beta = beta_create(4*1024);
-
-	// for testing manually set a simple program
-	beta->memory[0] = 0;
-	beta_load(beta, "graphics.bin");
-
-	// run the load script
 	script_run(lstate, argv[1]);
 
+	// Start the Beta emulation in its own thread
 	pthread_t beta_thread;
 	pthread_create(&beta_thread, NULL, beta_run, NULL);
 
-	while(true) {
-		//if(beta->halted) exit(0);
-
-		// graphics
-		memcpy(adapter->pixels, beta->graph_mem, sizeof(uint32_t)*adapter->width*adapter->height/8);
+	while (true) {
+		// Graphics
+		memcpy(adapter->pixels, beta->graph_mem, sizeof(uint32_t) * adapter->width * adapter->height / 8);
 		cga_render(adapter, screen, 0, 0);
 
-		//term_render(terminal, screen, 0, 400);
+		term_render(terminal, screen, 0, 400);
 		SDL_UpdateWindowSurface(window);
 
 		SDL_Event event;
 
-		while(SDL_PollEvent(&event)) {
+		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 				case SDL_QUIT:
 					running = false;
 					pthread_join(beta_thread, NULL);
-
 					exit(0);
 					break;
 				case SDL_KEYDOWN:
@@ -190,10 +188,20 @@ int main(int argc, char* argv[]) {
 							break;
 						case SDLK_LEFT:
 							break;
-						default:
-							//beta->key = event.key.keysym.unicode;
-							//beta_interrupt(beta, lstate, VEC_KBD);
+						default: {
+							const char* keyname = SDL_GetKeyName(event.key.keysym.sym);
+
+							if (strlen(keyname) == 1) {
+								printf("key = %s\n", keyname);
+								beta->key = keyname[0];
+								beta_interrupt(beta, lstate, VEC_KBD);
+							} else if (event.key.keysym.sym == SDLK_KP_SPACE) {
+								beta->key = ' ';
+								beta_interrupt(beta, lstate, VEC_KBD);
+							}
+
 							break;
+						}
 					}
 					break;
 			}

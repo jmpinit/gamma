@@ -10,26 +10,22 @@
 
 #include "betalib/debug.h"
 
-// LIBRARY INITIALIZATION
-
 static const luaL_Reg betalib[] = {
-	// initilializers
-	{ "new",		betalib_new },
+  // Initilializers
+  { "new", betalib_new },
 
-	// debug
-	{ "write_reg",	betalib_write_reg },
-	{ "read_reg",	betalib_read_reg },
-	{ "write_mem",	betalib_write_mem },
-	{ "read_mem",	betalib_read_mem },
-	{ "tick",		betalib_tick },
-	{ "interrupt",	betalib_interrupt },
-	{ "load",		betalib_load },
-
-	{ NULL,							NULL }
+  // debug
+  { "write_reg", betalib_write_reg },
+  { "read_reg", betalib_read_reg },
+  { "write_mem", betalib_write_mem },
+  { "read_mem", betalib_read_mem },
+  { "tick", betalib_tick },
+  { "interrupt", betalib_interrupt },
+  { "load", betalib_load },
+  { NULL, NULL },
 };
 
 LUALIB_API int luaopen_betalib(lua_State *L) {
-	luaL_register(L, "betalib", betalib);
-	return 1;
+  luaL_register(L, "betalib", betalib);
+  return 1;
 }
-

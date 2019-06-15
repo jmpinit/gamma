@@ -12,119 +12,117 @@
 
 #define ARGS "(memsize)"
 int betalib_new(lua_State *L) {
-	if(lua_type(L, 1) == LUA_TNUMBER) {
-		// get args
-		int memsize = (int)lua_tonumber(L, 1);
+  if(lua_type(L, 1) == LUA_TNUMBER) {
+    // Get args
+    int memsize = (int)lua_tonumber(L, 1);
 
-		// construct the beta
-		Beta* newbeta = beta_create(memsize);
+    // Construct the Beta
+    Beta* newbeta = beta_create(memsize);
 
-		// update state
-		beta = newbeta;
-	} else {
-		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
-	}
+    // Update state
+    beta = newbeta;
+  } else {
+    return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
+  }
 
-	return 0;
+  return 0;
 }
 #undef ARGS
 
 #define ARGS "(value, index)"
 int betalib_write_reg(lua_State *L) {
-	if(	lua_type(L, 1) == LUA_TNUMBER &&
-		lua_type(L, 2) == LUA_TNUMBER
-	) {
-		// get args
-		int value = (int)lua_tonumber(L, 1);
-		int index = (int)lua_tonumber(L, 2);
+  if (lua_type(L, 1) == LUA_TNUMBER &&
+    lua_type(L, 2) == LUA_TNUMBER
+  ) {
+    // Get args
+    int value = (int)lua_tonumber(L, 1);
+    int index = (int)lua_tonumber(L, 2);
 
-		beta_write_reg(beta, value, index);
-	} else {
-		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
-	}
+    beta_write_reg(beta, value, index);
+  } else {
+    return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
+  }
 
-	return 0;
+  return 0;
 }
 #undef ARGS
 
 #define ARGS "(index)"
 int betalib_read_reg(lua_State *L) {
-	if(lua_type(L, 1) == LUA_TNUMBER) {
-		// get args
-		int index = (int)lua_tonumber(L, 1);
+  if (lua_type(L, 1) == LUA_TNUMBER) {
+    // Get args
+    int index = (int)lua_tonumber(L, 1);
 
-		lua_pushnumber(L, beta_read_reg(beta, index));
-	} else {
-		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
-	}
+    lua_pushnumber(L, beta_read_reg(beta, index));
+  } else {
+    return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
+  }
 
-	return 1;
+  return 1;
 }
 #undef ARGS
 
 #define ARGS "(value, address)"
 int betalib_write_mem(lua_State *L) {
-	if(	lua_type(L, 1) == LUA_TNUMBER &&
-		lua_type(L, 2) == LUA_TNUMBER
-	) {
-		// get args
-		int value = (int)lua_tonumber(L, 1);
-		int address = (int)lua_tonumber(L, 2);
+  if (lua_type(L, 1) == LUA_TNUMBER && lua_type(L, 2) == LUA_TNUMBER) {
+    // Get args
+    int value = (int)lua_tonumber(L, 1);
+    int address = (int)lua_tonumber(L, 2);
 
-		beta_write_mem(beta, value, address);
-	} else {
-		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
-	}
+    beta_write_mem(beta, value, address);
+  } else {
+    return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
+  }
 
-	return 0;
+  return 0;
 }
 #undef ARGS
 
 #define ARGS "(address)"
 int betalib_read_mem(lua_State *L) {
-	if(lua_type(L, 1) == LUA_TNUMBER) {
-		// get args
-		int address = (int)lua_tonumber(L, 1);
+  if (lua_type(L, 1) == LUA_TNUMBER) {
+    // Get args
+    int address = (int)lua_tonumber(L, 1);
 
-		lua_pushnumber(L, beta_read_mem(beta, address));
-	} else {
-		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
-	}
+    lua_pushnumber(L, beta_read_mem(beta, address));
+  } else {
+    return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
+  }
 
-	return 1;
+  return 1;
 }
 #undef ARGS
 
 int betalib_tick(lua_State *L) {
-	beta_tick(beta, L);
-	return 0;
+  beta_tick(beta, L);
+  return 0;
 }
 
 #define ARGS "(address)"
 int betalib_interrupt(lua_State *L) {
-	if(lua_type(L, 1) == LUA_TNUMBER) {
-		// get args
-		int address = (int)lua_tonumber(L, 1);
+  if (lua_type(L, 1) == LUA_TNUMBER) {
+    // Get args
+    int address = (int)lua_tonumber(L, 1);
 
-		beta_interrupt(beta, L, address);
-	} else {
-		return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
-	}
+    beta_interrupt(beta, L, address);
+  } else {
+    return luaL_error(L, "%s: argument should be %s", __func__, ARGS);
+  }
 
-	return 0;
+  return 0;
 }
 #undef ARGS
 
 // (filename)
 int betalib_load(lua_State *L) {
-	if(lua_type(L, 1) == LUA_TSTRING) {
-		// get args
-		const char* filename = lua_tostring(L, 1);
+  if (lua_type(L, 1) == LUA_TSTRING) {
+    // Get args
+    const char* filename = lua_tostring(L, 1);
 
-		beta_load(beta, filename);
+    beta_load(beta, filename);
 
-		return 1;
-	} else {
-		return luaL_error(L, "%s: argument should be filename.", __func__);
-	}
+    return 1;
+  } else {
+    return luaL_error(L, "%s: argument should be filename.", __func__);
+  }
 }

@@ -23,18 +23,19 @@ uint cga_byte_size(CGA* s) {
 
 void cga_render(CGA* adapter, SDL_Surface* canvas, uint left, uint top) {
 	uint i = 0;
-	for(uint y=0; y < adapter->height; y++) { 
-		for(uint x=0; x < adapter->width; x++) { 
-			uint8_t index = adapter->pixels[i/2];
+	for (uint y = 0; y < adapter->height; y++) { 
+		for (uint x = 0; x < adapter->width; x++) { 
+			uint8_t index = adapter->pixels[i / 2];
 			i++;
 
-			// get correct nibble
-			if(x%2==0)
+			// Get correct nibble
+			if (x % 2 == 0) {
 				index &= 0xF;
-			else
+			} else {
 				index >>= 4;
+			}
 
-			if(adapter->pixelsize > 1) {
+			if (adapter->pixelsize > 1) {
 				SDL_Rect rect = {x * adapter->pixelsize, y * adapter->pixelsize, adapter->pixelsize, adapter->pixelsize};
 				SDL_FillRect(canvas, &rect, cga_colors[index]);
 			} else {
@@ -48,7 +49,7 @@ void cga_set(CGA* s, uint x, uint y, uint8_t v) {
 	uint rawindex = (y*s->width+x);
 	uint index = rawindex/2;
 
-	if(rawindex%2 == 0) {
+	if (rawindex % 2 == 0) {
 		s->pixels[index] &= 0x0F;
 		s->pixels[index] |= (v&0xF) << 4;
 	} else {
@@ -58,19 +59,20 @@ void cga_set(CGA* s, uint x, uint y, uint8_t v) {
 }
 
 uint8_t cga_get(CGA* s, uint x, uint y) {
-	uint rawindex = (y*s->width+x);
+	uint rawindex = y * s->width + x;
 	uint index = rawindex/2;
 
-	if(rawindex%2 == 0)
+	if (rawindex % 2 == 0) {
 		return s->pixels[index] >> 4;
-	else
+	} else {
 		return s->pixels[index] & 0xF;
+	}
 }
 
 void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel) {
 	int bpp = surface->format->BytesPerPixel;
 
-	// calculate address of pixel
+	// Calculate address of pixel
 	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 
 	switch(bpp) {

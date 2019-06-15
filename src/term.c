@@ -27,12 +27,13 @@ void term_clear(Terminal* t) {
 	t->x = 0;
 	t->y = 0;
 
-	for(int i=0; i < t->width*t->height; i++)
+	for (int i = 0; i < t->width * t->height; i++) {
 		t->text[i] = ' ';
+	}
 }
 
 void term_move(Terminal* t, unsigned int x, unsigned int y) {
-	if(x < t->width && y < t->height) {
+	if (x < t->width && y < t->height) {
 		t->x = x;
 		t->y = y;
 	}
@@ -41,12 +42,14 @@ void term_move(Terminal* t, unsigned int x, unsigned int y) {
 void term_next(Terminal* t) {
 	t->x++;
 
-	if(t->x >= t->width) {
+	// Move down and back to left side
+	if (t->x >= t->width) {
 		t->x = 0;
 		t->y++;
 	}
 
-	if(t->y >= t->height) {
+	// Wrap back to top left
+	if (t->y >= t->height) {
 		t->x = 0;
 		t->y = 0;
 	}
@@ -61,35 +64,41 @@ void term_putc(Terminal* t, char c) {
 			t->x = 0;
 			break;
 		default:
-			t->text[t->y*t->width+t->x] = c;
+			t->text[t->y * t->width + t->x] = c;
 			term_next(t);
 	}
 }
 
 void term_puts(Terminal* t, const char* str) {
-	char c; while((c = *(str++))) term_putc(t, c);
+	char c;
+
+	while ((c = *(str++))) {
+		term_putc(t, c);
+	}
 }
 
 void term_render(Terminal* t, struct SDL_Surface* canvas, uint left, uint top) {
 	SDL_Rect src, dest;
 
-	src.w = 11;
-	src.h = 13;
+	src.w = CHARACTER_WIDTH;
+	src.h = CHARACTER_HEIGHT;
 	dest.w = src.w;
 	dest.h = src.h;
 
-	for(int y=0; y < t->height; y++) {
-		for(int x=0; x < t->width; x++) {
-			unsigned int index = t->text[y*t->width+x] - ' ';
+	for (int y = 0; y < t->height; y++) {
+		for (int x = 0; x < t->width; x++) {
+			unsigned int index = t->text[y * t->width + x] - ' ';
 
-			if(index <= '~' - ' ') {
-				src.x = (index%10)*src.w;
-				src.y = (index/10)*src.h;
+			if (index <= '~' - ' ') {
+				src.x = (index % 10) * src.w;
+				src.y = (index / 10) * src.h;
 
-				dest.x = left + x*dest.w;
-				dest.y = top + y*dest.h;
+				dest.x = left + x * dest.w;
+				dest.y = top + y * dest.h;
 
-				SDL_BlitSurface(t->font, &src, canvas, &dest);
+				if (dest.x < canvas->w && dest.y < canvas->h) {
+					SDL_BlitSurface(t->font, &src, canvas, &dest);
+				}
 			}
 		}
 	}
