@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
 
 #include "SDL2/SDL.h"
 
@@ -98,16 +100,18 @@ void script_run(lua_State *L, const char* fn) {
 	}
 }
 
-int BetaThread(void *ptr) {
+void *beta_run(void *ptr) {
 	while(running && !beta->halted) {
 		beta_tick(beta, lstate);
 		if(interrupt) {
 			beta_interrupt(beta, lstate, interrupt);
 			interrupt = false;
 		}
+
+		usleep(100000);
 	}
 
-	return 0;
+	return NULL;
 }
 
 int main(int argc, char* argv[]) {
@@ -144,7 +148,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	SDL_init();
-	//SDL_EnableUNICODE(1);
 
 	// load the libraries
 	openlualibs(lstate);
@@ -153,24 +156,19 @@ int main(int argc, char* argv[]) {
 
 	// for testing manually set a simple program
 	beta->memory[0] = 0;
-	//beta_load(beta, "src/asm/graphics.bin");
+	beta_load(beta, "graphics.bin");
 
 	// run the load script
 	script_run(lstate, argv[1]);
 
-	/*SDL_Thread *thread;
-	thread = SDL_CreateThread(BetaThread, "BetaThread");
-
-	if(NULL == thread) {
-		printf("SDL_CreateThread failed: %s\n", SDL_GetError());
-		exit(1);
-	}*/
+	pthread_t beta_thread;
+	pthread_create(&beta_thread, NULL, beta_run, NULL);
 
 	while(true) {
 		//if(beta->halted) exit(0);
 
 		// graphics
-		//memcpy(adapter->pixels, beta->graph_mem, sizeof(uint32_t)*adapter->width*adapter->height/8);
+		memcpy(adapter->pixels, beta->graph_mem, sizeof(uint32_t)*adapter->width*adapter->height/8);
 		cga_render(adapter, screen, 0, 0);
 
 		//term_render(terminal, screen, 0, 400);
@@ -182,9 +180,7 @@ int main(int argc, char* argv[]) {
 			switch (event.type) {
 				case SDL_QUIT:
 					running = false;
-
-					//int threadReturnValue;
-					//SDL_WaitThread(thread, &threadReturnValue);
+					pthread_join(beta_thread, NULL);
 
 					exit(0);
 					break;
